@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Analizador y comparador de contraseñas</title>
+  <meta name="description" content="Generador y analizador de contraseñas con barra de fuerza, tiempo de hackeo y combinaciones.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- contenedor del programa -->
+  <header class="header">
+    <h1 class="site-title"> <img src="{{ url_for('static', filename='hackern.png') }}" alt="Logo" class="hacker-image" /> Analizador de Contraseñas</h1>
+
+    <!-- botones para iniciar sesion o registrarse -->
+    <div class="auth-buttons" id="auth-buttons">
+      <button id="btn-login" type="button" class="btn-secondary">Iniciar sesión</button>
+      <button id="btn-register" type="button" class="btn-primary">Registrarse</button>
+    </div>
+
+    <!-- informacion del usuario que esta logueado -->
+    <div class="user-info hidden" id="user-info">
+      <span id="user-name">👤 Usuario</span>
+      <button id="btn-logout" type="button" class="btn-logout">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- main general -->
+  <main class="container">
+
+    <!-- controles de analizar contraseña -->
+    <div class="control-row">
+      <input id="password-input" type="text" placeholder="Escribe tu contraseña aquí" autocomplete="off" />
+      <button id="analyze-button" type="button" class="btn-primary">Analizar</button>
+    </div>
+
+    <!-- barra de la fuerza -->
+    <div class="barra-fuerza-contenedor" aria-hidden="true">
+      <div class="barra-fuerza" id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+
+    <!-- texto para la fuerza -->
+    <p id="barra-texto" class="resultado-fuerza"></p>
+
+    <!-- recomendaciones que debe cumplir la gente -->
+    <div class="recomendaciones-container">
+      <h3> <img src="{{ url_for('static', filename='requisitos.png') }}" alt="Info" class="requisitos-image" /> Requisitos de seguridad:</h3>
+      <ul id="recomendaciones" class="reco-list">
+        <li id="req-length">✗ Usa al menos 12 caracteres.</li>
+        <li id="req-uppercase">✗ Incluye al menos una letra mayúscula.</li>
+        <li id="req-lowercase">✗ Incluye al menos una letra minúscula.</li>
+        <li id="req-number">✗ Incluye números.</li>
+        <li id="req-symbol">✗ Incluye símbolos (@ # $ % & *).</li>
+      </ul>
+    </div>
+
+    <!-- resultados que dan al hacer apachar analizar -->
+    <div id="resultados" class="resultados hidden">
+      <div class="resultado-card">
+        <h3> <img src="{{ url_for('static', filename='reloj.png') }}" alt="Reloj" class="reloj-image" /> Tiempo estimado de hackeo</h3>
+        <p id="tiempo-hackeo" class="resultado"></p>
+      </div>
+      <div class="resultado-card">
+        <h3> <img src="{{ url_for('static', filename='estadisticas.png') }}" alt="Info" class="estadisticas-image" /> Estadísticas</h3>
+        <p id="combinaciones" class="resultado"></p>
+        <p id="intentos" class="resultado"></p>
+      </div>
+      <div class="resultado-card">
+        <h3> <img src="{{ url_for('static', filename='significado.png') }}" alt="Info" class="signi-image" /> ¿Qué significan los tiempos de hackeo?</h3>
+        <p class="resultado"><strong>💻 Online:</strong> Tiempo que tarda en adivinar una contraseña desde internet, con límites de intentos. Es el más lento.</p>
+        <p class="resultado"><strong>💻 Offline (slow hash):</strong> Tiempo para hackear una contraseña guardada con un método de seguridad lento.</p>
+        <p class="resultado"><strong>💻 Offline (fast GPU):</strong> Tiempo para hackear usando computadoras potentes sin límites. Es el más rápido.</p>
+      </div>
+    </div>
+
+    <!-- funcionees bloqueadas -->
+    <div class="premium-section">
+      <div class="premium-overlay" id="premium-overlay">
+        <div class="premium-lock">
+          <img src="{{ url_for('static', filename='candado.png') }}" alt="Candado" class="lock-image" />
+          <p>Inicia sesión para desbloquear estas funciones</p>
+        </div>
+      </div>
+
+      <!-- funciones para generar una contra -->
+      <div class="generate-section">
+        <h3>Generar contraseña segura</h3>
+        <button id="generate-button" type="button" class="btn-generate" disabled>Generar contraseña</button>
+      </div>
+
+      <!-- funciones para comparar contras -->
+      <div class="compare-section">
+        <h3>Comparar contraseñas</h3>
+        <div class="compare-inputs">
+          <div class="input-group">
+            <label for="user-password">Tu contraseña:</label>
+            <input id="user-password" type="text" placeholder="Escribe tu contraseña actual" disabled />
+          </div>
+
+          <div class="input-group">
+            <label for="generated-password">Contraseña generada:</label>
+            <input id="generated-password" type="text" placeholder="Genera una contraseña primero" readonly />
+          </div>
+        </div>
+
+        <button id="btn-compare" type="button" class="btn-compare" disabled>Comparar contraseñas</button>
+        <p id="compare-result" class="resultado-comparacion"></p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- funcion para ver lo de los inicios de sesion o registro -->
+  <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
+    <div class="auth-modal-box">
+      <button id="auth-close" class="auth-close" aria-label="Cerrar">✕</button>
+
+      <div id="auth-forms">
+        <!-- inicio de sesion -->
+        <div id="login-form" class="auth-form">
+          <h2>Iniciar sesión</h2>
+          <input id="auth-login-email" type="email" placeholder="Correo electrónico" />
+          <input id="auth-login-password" type="password" placeholder="Contraseña" />
+          <button id="auth-login-submit" type="button" class="btn-primary">Entrar</button>
+          <p class="auth-switch">¿No tienes cuenta? <a href="#" id="show-register">Regístrate aquí</a></p>
+        </div>
+
+        <!-- registro -->
+        <div id="register-form" class="auth-form hidden">
+          <h2>Crear cuenta</h2>
+          <input id="auth-reg-name" type="text" placeholder="Nombre completo" />
+          <input id="auth-reg-email" type="email" placeholder="Correo electrónico" />
+          <input id="auth-reg-password" type="password" placeholder="Contraseña" />
+          <button id="auth-reg-submit" type="button" class="btn-primary">Crear cuenta</button>
+          <p class="auth-switch">¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión aquí</a></p>
+        </div>
+
+        <p id="auth-msg" class="auth-message"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- enlace con el js -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

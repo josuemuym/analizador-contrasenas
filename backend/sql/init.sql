@@ -1,0 +1,13 @@
+CREATE DATABASE IF NOT EXISTS analizador_passwords
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_general_ci;
+
+USE analizador_passwords;
+
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(150) NOT NULL,
+  correo VARCHAR(150) NOT NULL UNIQUE,
+  contrasena VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

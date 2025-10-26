@@ -1,0 +1,8 @@
+Flask==3.0.0
+flask-cors==4.0.0
+mysql-connector-python==8.2.0
+bcrypt==4.1.1
+zxcvbn==4.4.28
+gunicorn==21.2.0
+PyMySQL==1.1.0
+cryptography==41.0.7
